@@ -77,5 +77,65 @@ connection.query(sql, [name, dob, contact, image], (error, results) => {
 });
 });
 
+app.get('/editStudent/:id', (req, res) => {
+    const studentId = req.params.id;
+    const sql = 'SELECT * FROM student WHERE studentId = ?';
+    // Fetch data from MySQL based on the student ID
+    connection.query(sql, [studentId], (error, results) => {
+        if (error) {
+            console.error('Database query error:', error.message);
+            return res.send('Error retrieving student by ID');
+        }
+        // Check if any student with the given ID was found
+        if (results.length > 0) {
+            // Render HTML page with the student data
+            res.render('editStudent', { student: results[0] });
+        } else {
+            // If no student with the given ID was found, render a 404 page or handle it accordingly
+            res.send('Student not found');
+        }
+    });
+});
+app.post('/editStudent/:id', (req, res) => {
+    const studentId = req.params.id;
+    const { name, dob, contact, image } = req.body;
+
+    const selectSql = 'SELECT image FROM student WHERE studentId = ?';
+    connection.query(selectSql, [studentId], (selectError, selectResults) => {
+        if (selectError) {
+            console.error('Error fetching current student image:', selectError);
+            return res.send('Error updating student');
+        }
+
+        const currentImage = selectResults[0] ? selectResults[0].image : '';
+        const imageToSave = image || currentImage;
+
+        const sql = 'UPDATE student SET name = ?, dob = ?, contact = ?, image = ? WHERE studentId = ?';
+        connection.query(sql, [name, dob, contact, imageToSave, studentId], (error, results) => {
+            if (error) {
+                console.error('Error updating student:', error);
+                res.send('Error updating student');
+            } else {
+                res.redirect('/');
+            }
+        });
+    });
+});
+
+app.get('/deleteStudent/:id', (req, res) => {
+    const studentId = req.params.id;
+    const sql = 'DELETE FROM student WHERE studentId = ?';
+    connection.query(sql, [studentId], (error, results) => {
+        if (error) {
+            // Handle any error that occurs during the database operation
+            console.error("Error deleting student:", error);
+            res.send('Error deleting student');
+        } else {
+            // Send a success response
+            res.redirect('/');
+        }
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port http://localhost:${PORT}`));
