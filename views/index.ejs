@@ -35,15 +35,30 @@
             <th width="100">Student Image</th>
             <th width="50">Dob</th>
             <th width="50">Contact</th>
+            <th width="50">Edit</th>
+            <th width="50">Delete</th>
           </tr>
       </thead>
       <tbody>
         <% for(let i=0; i < student.length; i++) { %>
+          <%
+            let displayDob = '';
+            if (student[i].dob) {
+              const dobDate = student[i].dob instanceof Date ? student[i].dob : new Date(student[i].dob);
+              if (!isNaN(dobDate.getTime())) {
+                displayDob = dobDate.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+              }
+            }
+          %>
           <tr>
             <td><a href="/student/<%= student[i].studentId %>"><%= student[i].name %></a></td>
             <td><img src="<%= student[i].image%>" width="20%"></td>
-            <td><%= new Date(student[i].dob).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></td>
+            <td><%= displayDob %></td>
             <td><%= student[i].contact %></td>
+            <!-- Edit Link -->
+            <td><a href="/editStudent/<%= student[i].studentId %>" class="btn btn-primary btn-sm">Edit</a></td>
+            <!-- Delete Link -->
+            <td><a href="/deleteStudent/<%= student[i].studentId %>" onclick="return confirm('Are you sure you want to delete this student?')" class="btn btn-danger btn-sm">Delete</a></td>
           </tr>
         <% } %>
       </tbody>
